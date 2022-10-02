@@ -1,0 +1,6 @@
+version: '3'
+
+services:
+  color_processor:
+    volumes:
+      - ./images/test_images:/app/test_images

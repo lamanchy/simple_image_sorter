@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-6">
+        <form enctype="multipart/form-data" action="{{ url_for('index') }}" method="post">
+            <label for="image" class="form-label">Image for analysis</label><br>
+            <input class="form-control" type="file" name="image" id="image"
+                   accept="image/png, image/jpeg" required><br>
+            <input class="btn btn-secondary" type="submit">
+        </form>
+    </div>
+    {% if request.method == 'POST' %}
+    <div class="col-sm-6">
+        Color: {{ image_color }}<br>
+        <img class="img-fluid" src="data:image;base64,{{ image_url }}" alt="image">
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

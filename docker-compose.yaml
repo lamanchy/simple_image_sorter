@@ -1,0 +1,93 @@
+version: '3'
+services:
+  nats:
+    container_name: sis-nats
+    image: nats
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 "
+
+  reader:
+    container_name: sis-reader
+    build: ./reader
+    volumes:
+      - ./logs:/logs
+      - ./reader:/app
+      - ./images/source:/app/source
+    profiles:
+      - main
+      - all
+    links:
+      - nats
+    depends_on:
+      - color_processor
+    environment:
+      NATS_HOST: ${NATS_HOST}
+      LOG_LEVEL: ${LOG_LEVEL}
+
+  color_processor:
+    container_name: sis-color_processor
+    build: ./color_processor
+    volumes:
+      - ./logs:/logs
+      - ./color_processor:/app
+      - ./images/test_images:/app/test_images
+    profiles:
+      - main
+      - interface
+      - all
+    links:
+      - nats
+    environment:
+      NATS_HOST: ${NATS_HOST}
+      LOG_LEVEL: ${LOG_LEVEL}
+
+  writer:
+    container_name: sis-writer
+    build: ./writer
+    volumes:
+      - ./logs:/logs
+      - ./writer:/app
+      - ./images/sorted:/app/sorted
+    profiles:
+      - main
+      - all
+    links:
+      - nats
+    environment:
+      NATS_HOST: ${NATS_HOST}
+      LOG_LEVEL: ${LOG_LEVEL}
+
+  interface:
+    container_name: sis-interface
+    build: ./interface
+    volumes:
+      - ./logs:/logs
+      - ./interface:/app
+    profiles:
+      - interface
+      - all
+    links:
+      - nats
+    depends_on:
+      - color_processor
+    ports:
+      - 5000:5000
+    environment:
+      NATS_HOST: ${NATS_HOST}
+      LOG_LEVEL: ${LOG_LEVEL}
+
+  tester:
+    container_name: sis-tester
+    build: ./tester
+    volumes:
+      - ./logs:/logs
+      - ./tester:/app
+      - ./images:/app/images
+    profiles:
+      - testing
+      - all
+    links:
+      - nats
+    depends_on:
+      - reader
+      - color_processor
+      - writer

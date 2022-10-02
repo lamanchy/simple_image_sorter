@@ -1,0 +1,5 @@
+version: '3'
+services:
+  color_processor:
+    depends_on:
+      - writer
